@@ -1,10 +1,10 @@
 from datetime import timedelta
-import pytest
 
 from django.test.client import Client
 from django.utils import timezone
+import pytest
 
-from news.models import News, Comment
+from news.models import Comment, News
 from yanews.settings import NEWS_COUNT_ON_HOME_PAGE
 
 
@@ -79,7 +79,7 @@ def news_list():
         )
         for index in range(NEWS_COUNT_ON_HOME_PAGE + 1)
     ]
-    return News.objects.bulk_create(all_news)
+    News.objects.bulk_create(all_news)
 
 
 @pytest.fixture
@@ -95,4 +95,3 @@ def comments_list(news, author):
         comment.created = now + timedelta(days=index)
         comment.save()
         comments.append(comment)
-    return comments

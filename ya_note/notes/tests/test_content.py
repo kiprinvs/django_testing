@@ -9,6 +9,7 @@ User = get_user_model()
 
 
 class TestContent(TestCase):
+    """Тестрирование контента."""
 
     @classmethod
     def setUpTestData(cls):
@@ -22,19 +23,28 @@ class TestContent(TestCase):
             title='Заголовок', text='Текст', author=cls.author
         )
 
-    def test_notes_list_for_author(self):
-        url = reverse('notes:list')
-        response = self.auth_client_author.get(url)
-        object_list = response.context['object_list']
-        self.assertIn(self.note, object_list)
+    def test_notes_list_for_different_users(self):
+        """
+        Тест доступности заметок.
 
-    def test_notes_list_for_reader(self):
-        url = reverse('notes:list')
-        response = self.auth_client_reader.get(url)
-        object_list = response.context['object_list']
-        self.assertNotIn(self.note, object_list)
+        Отдельная заметка передаётся на страницу со списком заметок.
+        В список заметок одного пользователя не попадают заметки
+        другого пользователя.
+        """
+        users_availability = (
+            (self.auth_client_author, True),
+            (self.auth_client_reader, False)
+        )
+        for user, availability in users_availability:
+            with self.subTest(user=user):
+                url = reverse('notes:list')
+                response = user.get(url)
+                object_list = response.context.get('object_list')
+                note_availability = self.note in object_list
+                self.assertIs(note_availability, availability)
 
     def test_create_and_edit_note_contains_form(self):
+        """На страницы создания и редактирования заметки передаются формы."""
         urls = (
             ('notes:add', None),
             ('notes:edit', (self.note.slug,))
