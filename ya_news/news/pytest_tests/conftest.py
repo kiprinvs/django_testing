@@ -1,8 +1,8 @@
 from datetime import timedelta
 
+import pytest
 from django.test.client import Client
 from django.utils import timezone
-import pytest
 
 from news.models import Comment, News
 from yanews.settings import NEWS_COUNT_ON_HOME_PAGE
@@ -85,7 +85,6 @@ def news_list():
 @pytest.fixture
 def comments_list(news, author):
     now = timezone.now()
-    comments = []
     for index in range(5):
         comment = Comment.objects.create(
             news=news,
@@ -94,4 +93,3 @@ def comments_list(news, author):
         )
         comment.created = now + timedelta(days=index)
         comment.save()
-        comments.append(comment)

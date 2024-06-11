@@ -1,6 +1,6 @@
+import pytest
 from django.urls import reverse
 from pytest_lazyfixture import lazy_fixture
-import pytest
 
 from news.forms import CommentForm
 from yanews.settings import NEWS_COUNT_ON_HOME_PAGE
@@ -29,7 +29,7 @@ def test_news_order(client):
 
 @pytest.mark.django_db
 def test_comments_order(client, news, comments_list):
-    """Комментарии отсортированы в хронологическом порядке"""
+    """Комментарии отсортированы в хронологическом порядке."""
     url = reverse('news:detail', args=(news.id,))
     response = client.get(url)
     news = response.context.get('news')
@@ -59,5 +59,5 @@ def test_form_availability_for_different_users(
     url = reverse('news:detail', args=news_id_for_args)
     response = parametrized_client.get(url)
     assert ('form' in response.context) is availability_form
-    if 'form' in response.context:
+    if availability_form:
         assert isinstance(response.context['form'], CommentForm)

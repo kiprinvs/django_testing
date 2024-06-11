@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
+import pytest
 from django.urls import reverse
 from pytest_django.asserts import assertFormError, assertRedirects
-import pytest
 
 from news.models import Comment
 from news.forms import BAD_WORDS, WARNING
@@ -23,25 +23,27 @@ def test_anonymous_user_cant_create_comment(
 
 
 def test_user_can_create_comment(
-    not_author_client, news_id_for_args, form_data, not_author, news
+    author_client, news_id_for_args, form_data, author, news
 ):
     """Авторизованный пользователь может отправить комментарий."""
     url = reverse('news:detail', args=news_id_for_args)
-    response = not_author_client.post(url, data=form_data)
+    response = author_client.post(url, data=form_data)
     comments_count = Comment.objects.count()
     comment = Comment.objects.get()
     assertRedirects(response, f'{url}#comments')
     assert comments_count == 1
     assert comment.text == form_data['text']
-    assert comment.author == not_author
+    assert comment.author == author
     assert comment.news == news
 
 
 @pytest.mark.parametrize(
-    'word',
+    'bad_word',
     BAD_WORDS,
 )
-def test_user_cant_use_bad_words(not_author_client, news_id_for_args, word):
+def test_user_cant_use_bad_words(
+    not_author_client, news_id_for_args, bad_word
+):
     """
     Тест отправки запрещенных слов в комментарий.
 
@@ -49,7 +51,7 @@ def test_user_cant_use_bad_words(not_author_client, news_id_for_args, word):
     а форма вернёт ошибку.
     """
     url = reverse('news:detail', args=news_id_for_args)
-    bad_words_data = {'text': f'Какой-то текст, {word}, еще текст'}
+    bad_words_data = {'text': f'Какой-то текст, {bad_word}, еще текст'}
     response = not_author_client.post(url, data=bad_words_data)
     assertFormError(response, form='form', field='text', errors=WARNING)
     comments_count = Comment.objects.count()
